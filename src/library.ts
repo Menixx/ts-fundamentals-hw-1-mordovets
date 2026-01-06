@@ -1,22 +1,52 @@
 // TODO: імпортуй Book і типи
-// import { Book } from "./book";
-// import type { BookId } from "./types";
+import { Book } from "./book";
+import type { BookId } from "./types";
 
 export class Library {
   // TODO: реалізуй колекцію книжок (Map або іншу структуру)
-  items;
+  private items: Record<BookId, Book> = {};
 
-  add(item) {}
+  add(item: Book) {
+    if (item.id in this.items) {
+      throw new Error("Item already exists");
+    }
 
-  remove(id) {}
+    this.items[item.id] = item;
+  }
 
-  listAll() {}
+  remove(id: BookId) {
+    const book = this.getBookOrThrow(id);
 
-  listAvailable() {}
+    if (book.getStatus() === "borrowed") {
+      throw new Error("Cannot remove borrowed item");
+    }
 
-  borrow(bookId, personName) {}
+    delete this.items[id];
+  }
 
-  return(bookId) {}
+  listAll() {
+    return Object.values(this.items);
+  }
 
-  getBookOrThrow(id) {}
+  listAvailable() {
+    return Object.values(this.items).filter(
+      (book) => book.getStatus() === "available"
+    );
+  }
+
+  borrow(bookId: BookId, personName: string) {
+    this.getBookOrThrow(bookId).markBorrowed(personName);
+  }
+
+  return(bookId: BookId) {
+    this.getBookOrThrow(bookId).markReturned();
+  }
+
+  getBookOrThrow(id: BookId): Book {
+    if (!(id in this.items)) {
+      throw new Error("Book not found");
+    }
+
+    return this.items[id];
+  }
 }
